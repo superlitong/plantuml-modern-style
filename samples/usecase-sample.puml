@@ -1,0 +1,23 @@
+@startuml usecase-sample
+!include ..\libs\core.puml
+
+' 设置方向
+LAYOUT_LEFT_RIGHT
+'LAYOUT_TOP_DOWN
+'LAYOUT_AS_SKETCH
+
+
+actor customer
+actor clerk
+
+UserCasePackage("checkout","买单") {
+    customer -- (checkout)
+    (checkout) .> (payment) : include
+    (help) .> (checkout) : extends
+    (checkout) -- clerk
+}
+
+@enduml
+
+
+
