@@ -1,0 +1,63 @@
+@startuml
+
+!include ..\libs\core.puml
+
+' 使用红色箭头，默认为灰色
+RED_ARROW
+
+
+skinparam sequenceMessageAlign center
+skinparam defaultFontName Huawei Sans Light
+
+skinparam sequence {
+    ArrowColor Olive
+}
+
+'box "LocalDevice" #LightBlue
+participant App_local as APPp
+participant HMS_local as HMSp
+'end box
+
+
+
+'box "RemoteDevice" #LightBlue
+participant HMS_remote as HMSs
+participant App_remote as APPs
+'end box
+
+participant AppCloud as cloud
+
+title Contact Shield API flow
+
+alt Broadcast & Scan
+APPp -> HMSp: mDev = ContactShield.getContactShieldEngine(activity)
+APPp -> HMSp: mDev.startContactShield(settings)
+note right: A user authorizes to enable Contact Shield
+HMSp -> HMSp: Generate periodic keys and supplementary data and derive DSCs
+note right: Periodic keys are updated in hours and dynamic sharing codes (DSCs) are updated in minutes
+HMSp --> HMSs: Advertise UUID, DSC, and supplementary data with BLE
+APPs -> HMSs: mDev = ContactShield.getContactShieldEngine(activity)
+APPs -> HMSs: mDev.startContactShield(settings)
+HMSs -> HMSs: BLE Scanning
+note left: Scan for UUID \nSave DSC and TxPower in supplementary data
+end alt
+
+alt Upload periodicKeys when tested positive
+APPp -> HMSp: periodKeys = mDev.getPeriodicKey()
+APPp --> cloud: Upload periodKeys under user's permission
+end alt
+
+alt Download sharedKeys for contact checking
+cloud --> APPs: Fetch sharedKeyFiles periodically
+APPs -> HMSs: mDev.putSharedKeyFiles(intent, files, config, token)
+HMSs -> HMSs: Resove sharedKeys
+note left: Check if DSCs derived from sharedKey match the DSCs scanned and stored before. Calculate contact details if it matches.
+HMSs -> HMSs: RiskValue/Annuation/Duration computation
+APPs -> HMSs: mDev.getContactSketch(token)
+APPs -> HMSs: mDev.getContactDetail(token)
+APPs -> HMSs: mDev.getContactWindow(token)
+APPs -> APPs: Diagnose confirmed
+end alt
+
+
+@enduml
