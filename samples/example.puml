@@ -1,0 +1,19 @@
+@startuml example
+
+' 加载库文件，使新风格生效
+!include ../libs/core.puml
+
+' 设置成草图风格[可选]
+skinparam backgroundColor #EEEBDC
+skinparam handwritten true
+center footer <font color=red>Warning:</font> Created for discussion, needs to be validated
+
+' 设置红色箭头[可选]
+RED_ARROW
+
+Alice -> Bob: Authentication Request
+Bob --> Alice: Authentication Response
+
+Alice -> Bob: Another authentication Request
+Alice <-- Bob: another authentication Response
+@enduml
